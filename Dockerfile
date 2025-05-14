@@ -1,32 +1,14 @@
-# Step 1: Use a Maven image to build the application
-FROM maven:3.8-openjdk-17 AS builder
+# Use Java 21 base image
+FROM openjdk:21-jdk-slim
 
-# Set the working directory for the build
+# Set the working directory
 WORKDIR /app
 
-# Copy the pom.xml file to download dependencies
-COPY pom.xml .
+# Copy the JAR file into the container
+COPY target/demo-0.0.1-SNAPSHOT.jar /app/app.jar
 
-# Download dependencies to cache them (this helps to avoid downloading them every time)
-RUN mvn dependency:go-offline
-
-# Copy the rest of the project files
-COPY . .
-
-# Build the project (create the JAR file)
-RUN mvn clean package -DskipTests
-
-# Step 2: Use a base image with Java installed for running the application
-FROM openjdk:17-jdk-slim
-
-# Set the working directory inside the container for runtime
-WORKDIR /app
-
-# Copy the built JAR file from the builder image
-COPY --from=builder /app/target/practice.jar /app/practice.jar
-
-# Expose port 8080 for the application
+# Expose port 8080
 EXPOSE 8080
 
-# Command to run the Spring Boot application
-ENTRYPOINT ["java", "-jar", "practice.jar"]
+# Run the JAR file
+ENTRYPOINT ["java", "-jar", "app.jar"]
